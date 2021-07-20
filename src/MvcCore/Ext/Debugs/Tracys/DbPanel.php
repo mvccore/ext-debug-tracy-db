@@ -81,7 +81,7 @@ class DbPanel implements \Tracy\IBarPanel {
 			) = \MvcCore\Ext\Models\Db\Connection::DumpQueryWithParams($connection->GetProvider(), $item->query, $item->params);
 			$this->queries[] = (object) [
 				'query'		=> $dumpSuccess ? $queryWithValues : $item->query,
-				'params'	=> $item->params,
+				'params'	=> $dumpSuccess ? $item->params : NULL,
 				'exec'		=> $item->exec,
 				'stack'		=> $item->stack,
 				'connection'=> $connConfig->{$sysConfProps->name},
