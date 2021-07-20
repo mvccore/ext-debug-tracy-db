@@ -1,0 +1,40 @@
+<style type="text/css">
+	#tracy-db-panel-title{cursor:move;}
+	#tracy-db-panel-title .left,
+	#tracy-db-panel-content .left{display:block;float:left;}
+	#tracy-db-panel-title .right,
+	#tracy-db-panel-content .right{display:block;float:right;}
+	#tracy-db-panel-title .clear,
+	#tracy-db-panel-content .clear{clear:both;}
+	#tracy-db-panel-title *{white-space:nowrap;}
+	#tracy-db-panel-title .left{line-height:30px;font-size:24px;}
+	#tracy-db-panel-title .right{line-height:16px;font-size:10px;padding-top:12px;}
+	#tracy-db-panel-content{min-width:500px;max-width:800px;min-height:100px;max-height:800px;overflow:auto;}
+	#tracy-db-panel-content table{width:100%;border-collapse:collapse;background:#FDF5CE;margin:0 0 5px 0;}
+	#tracy-db-panel-content .h2{display:block;overflow:hidden;}
+	#tracy-db-panel-content .h2 .left{line-height:24px;font-size:16px;}
+	#tracy-db-panel-content .h2 .right{line-height:10px;text-align:right;}
+	#tracy-db-panel-content .h2 .right i{display:block;line-height:12px;font-size:10px;color:#aaa;}
+	#tracy-db-panel-content table td,#tracy-db-panel-content table th{border:1px solid #E6DFBF;padding:2px 5px;vertical-align:top;text-align:left;}
+</style>
+<h1 id="tracy-db-panel-title">
+	<span class="left">
+		<img width="16" height="16" src="data:image/svg;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjA0OCAyMDQ4Ij48cGF0aCBmaWxsPSIjYWFhIiBkPSJNMTAyNCA4OTZxMjM3IDAgNDQzLTQzdDMyNS0xMjd2MTcwcTAgNjktMTAzIDEyOHQtMjgwIDkzLjUtMzg1IDM0LjUtMzg1LTM0LjUtMjgwLTkzLjUtMTAzLTEyOHYtMTcwcTExOSA4NCAzMjUgMTI3dDQ0MyA0M3ptMCA3NjhxMjM3IDAgNDQzLTQzdDMyNS0xMjd2MTcwcTAgNjktMTAzIDEyOHQtMjgwIDkzLjUtMzg1IDM0LjUtMzg1LTM0LjUtMjgwLTkzLjUtMTAzLTEyOHYtMTcwcTExOSA4NCAzMjUgMTI3dDQ0MyA0M3ptMC0zODRxMjM3IDAgNDQzLTQzdDMyNS0xMjd2MTcwcTAgNjktMTAzIDEyOHQtMjgwIDkzLjUtMzg1IDM0LjUtMzg1LTM0LjUtMjgwLTkzLjUtMTAzLTEyOHYtMTcwcTExOSA4NCAzMjUgMTI3dDQ0MyA0M3ptMC0xMTUycTIwOCAwIDM4NSAzNC41dDI4MCA5My41IDEwMyAxMjh2MTI4cTAgNjktMTAzIDEyOHQtMjgwIDkzLjUtMzg1IDM0LjUtMzg1LTM0LjUtMjgwLTkzLjUtMTAzLTEyOHYtMTI4cTAtNjkgMTAzLTEyOHQyODAtOTMuNSAzODUtMzQuNXoiPjwvcGF0aD48L3N2Zz4" />
+		Database Panel
+	</span>
+	<span class="right"><b>Total queires count:</b> <?php echo count($this->queries); ?></span>
+	<div class="clear"></div>
+</h1>
+<div id="tracy-db-panel-content">
+	<table>
+		<tbody>
+			<?php foreach ($this->queries as & $item): ?>
+				<tr>
+					<td><?php echo $item->query; ?></td>
+					<td><?php echo $item->exec; ?></td>
+					<td><?php echo $item->connection; ?></td>
+				</tr>
+			<?php endforeach; ?>
+		</tbody>
+	</table>
+</div>
