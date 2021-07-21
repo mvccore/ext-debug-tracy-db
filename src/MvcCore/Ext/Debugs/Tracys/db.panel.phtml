@@ -186,7 +186,7 @@
 			tbody.innerHTML = rowsCodes.join('');
 		};
 		var completeRowsData = function () {
-			var tbodyRows = [].slice.apply(tbody.querySelectorAll('tr'));
+			var tbodyRows = [].slice.apply(tbody.querySelectorAll('tr.query-row'));
 			rowsData = [];
 			tbodyRows.forEach(function (tbodyRow, index) {
 				var row = JSON.parse(tbodyRow.dataset.row);
