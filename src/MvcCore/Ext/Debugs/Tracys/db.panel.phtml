@@ -1,40 +1,228 @@
 <style type="text/css">
-	#tracy-db-panel-title{cursor:move;}
-	#tracy-db-panel-title .left,
-	#tracy-db-panel-content .left{display:block;float:left;}
-	#tracy-db-panel-title .right,
-	#tracy-db-panel-content .right{display:block;float:right;}
-	#tracy-db-panel-title .clear,
-	#tracy-db-panel-content .clear{clear:both;}
-	#tracy-db-panel-title *{white-space:nowrap;}
-	#tracy-db-panel-title .left{line-height:30px;font-size:24px;}
-	#tracy-db-panel-title .right{line-height:16px;font-size:10px;padding-top:12px;}
-	#tracy-db-panel-content{min-width:500px;max-width:800px;min-height:100px;max-height:800px;overflow:auto;}
-	#tracy-db-panel-content table{width:100%;border-collapse:collapse;background:#FDF5CE;margin:0 0 5px 0;}
-	#tracy-db-panel-content .h2{display:block;overflow:hidden;}
-	#tracy-db-panel-content .h2 .left{line-height:24px;font-size:16px;}
-	#tracy-db-panel-content .h2 .right{line-height:10px;text-align:right;}
-	#tracy-db-panel-content .h2 .right i{display:block;line-height:12px;font-size:10px;color:#aaa;}
-	#tracy-db-panel-content table td,#tracy-db-panel-content table th{border:1px solid #E6DFBF;padding:2px 5px;vertical-align:top;text-align:left;}
+	#tracy-db-panel{overflow:hidden;}
+	.tracy-mode-float #tracy-db-panel{overflow:visible;}
+	
+	#tracy-db-panel h1{cursor:move;overflow:hidden;}
+	#tracy-debug #tracy-db-panel h1{padding-right:0;}
+	#tracy-db-panel h1 *{white-space:nowrap;}
+	#tracy-db-panel h1 .left{display:block;float:left;line-height:30px;font-size:24px;}
+	#tracy-db-panel h1 .right{display:block;float:right;line-height:16px;font-size:10px;padding-top:12px;}
+
+	#tracy-db-panel .content > table{width:auto;}
+	#tracy-db-panel .content > table thead tr th a{text-decoration:underline;}
+	#tracy-db-panel .content > table thead tr th a.asc::after{content:'▼';}
+	#tracy-db-panel .content > table thead tr th a.desc::after{content:'▲';}
+	#tracy-db-panel .content > table thead tr th a:hover,
+	#tracy-db-panel .content > table thead tr th a:focus,
+	#tracy-db-panel .content > table thead tr th a:active{text-decoration:none;}
+
+	#tracy-db-panel .content > table tbody tr td.query{overflow:hidden;}
+	#tracy-db-panel .content > table tbody tr td.query div{overflow:hidden;max-width:250px;max-height:16px;line-height:20px;font-size:12px;font-family:Consolas,monospace;}
+	#tracy-db-panel .content > table tbody tr.opened td.query div{overflow:visible;max-width:none;max-height:none;white-space:pre;tab-size:4;}
+	#tracy-db-panel .content > table tbody tr td.order,
+	#tracy-db-panel .content > table tbody tr td.exec{text-align:right;}
+
+	#tracy-db-panel .content > table tbody tr td.stack div{overflow:hidden;max-height:16px;line-height:20px;font-size:12px;text-align:right;}
+	#tracy-db-panel .content > table tbody tr.opened td.stack div{overflow:visible;max-height:none;text-align:left;}
+	#tracy-db-panel .content > table tbody tr td.stack div span.info{display:inline-block;}
+	#tracy-db-panel .content > table tbody tr td.stack div table.steps{display:none;}
+	#tracy-db-panel .content > table tbody tr.opened td.stack div span.info{display:none;}
+	#tracy-db-panel .content > table tbody tr.opened td.stack div table.steps{display:table;}
+
+	#tracy-db-panel .content > table tbody tr td.stack div table{border:0;border-collapse:collapse;}
+	#tracy-db-panel .content > table tbody tr td.stack div table tbody tr td{border:0;padding:0;white-space:nowrap;}
+	#tracy-db-panel .content > table tbody tr td.stack div table tbody tr td.code{padding-left:15px;}
+	#tracy-db-panel .content > table tbody tr td.stack div table tbody tr td span,
+	#tracy-db-panel .content > table tbody tr td.stack div table tbody tr td span a{white-space:nowrap;word-wrap:normal;}
+
+	#tracy-db-panel .content > table tbody tr td.conn{text-align:center;}
 </style>
-<h1 id="tracy-db-panel-title">
-	<span class="left">
-		<img width="16" height="16" src="data:image/svg;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjA0OCAyMDQ4Ij48cGF0aCBmaWxsPSIjYWFhIiBkPSJNMTAyNCA4OTZxMjM3IDAgNDQzLTQzdDMyNS0xMjd2MTcwcTAgNjktMTAzIDEyOHQtMjgwIDkzLjUtMzg1IDM0LjUtMzg1LTM0LjUtMjgwLTkzLjUtMTAzLTEyOHYtMTcwcTExOSA4NCAzMjUgMTI3dDQ0MyA0M3ptMCA3NjhxMjM3IDAgNDQzLTQzdDMyNS0xMjd2MTcwcTAgNjktMTAzIDEyOHQtMjgwIDkzLjUtMzg1IDM0LjUtMzg1LTM0LjUtMjgwLTkzLjUtMTAzLTEyOHYtMTcwcTExOSA4NCAzMjUgMTI3dDQ0MyA0M3ptMC0zODRxMjM3IDAgNDQzLTQzdDMyNS0xMjd2MTcwcTAgNjktMTAzIDEyOHQtMjgwIDkzLjUtMzg1IDM0LjUtMzg1LTM0LjUtMjgwLTkzLjUtMTAzLTEyOHYtMTcwcTExOSA4NCAzMjUgMTI3dDQ0MyA0M3ptMC0xMTUycTIwOCAwIDM4NSAzNC41dDI4MCA5My41IDEwMyAxMjh2MTI4cTAgNjktMTAzIDEyOHQtMjgwIDkzLjUtMzg1IDM0LjUtMzg1LTM0LjUtMjgwLTkzLjUtMTAzLTEyOHYtMTI4cTAtNjkgMTAzLTEyOHQyODAtOTMuNSAzODUtMzQuNXoiPjwvcGF0aD48L3N2Zz4" />
-		Database Panel
-	</span>
-	<span class="right"><b>Total queires count:</b> <?php echo count($this->queries); ?></span>
-	<div class="clear"></div>
-</h1>
-<div id="tracy-db-panel-content">
-	<table>
-		<tbody>
-			<?php foreach ($this->queries as & $item): ?>
+<div id="tracy-db-panel">
+	<h1>
+		<span class="left">Database Panel</span>
+		<span class="right">
+			queires count: <?php echo $this->queriesCount; ?>,
+			<span title="<?php echo number_format($this->queriesTime, 3, '.', ' '); ?>&nbsp;s">queires time: <?php echo number_format($this->queriesTime * 1000, 3, '.', ' '); ?>&nbsp;ms</span>
+		</span>
+	</h1>
+	<div class="content">
+		<table>
+			<thead>
 				<tr>
-					<td><?php echo $item->query; ?></td>
-					<td><?php echo $item->exec; ?></td>
-					<td><?php echo $item->connection; ?></td>
+					<th><a data-map="order" data-dir="1" class="asc" href="javascript:void(0);">Order</a></th>
+					<th>Query</th>
+					<th><a data-map="exec" data-dir="0" class="" href="javascript:void(0);">Execution&nbsp;time</a></th>
+					<th>Stack</th>
+					<th><a data-map="conn" data-dir="0" class="" href="javascript:void(0);">Connection</a></th>
 				</tr>
-			<?php endforeach; ?>
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				<?php foreach ($this->queries as $key => $item): ?>
+					<tr class="query-row" data-hash="<?php echo $item->hash; ?>" data-row='{"exec":<?php echo $item->exec; ?>,"conn":<?php echo json_encode($item->connection); ?>}'>
+						<td class="order"><?php echo number_format($key+1, 0, '', '&nbsp;'); ?></td>
+						<td class="query"><div><?php
+							echo $item->query;
+							if ($item->params !== NULL)
+								echo '<br /><br />' . \Tracy\Dumper::toHtml($item->params, [
+									\Tracy\Dumper::COLLAPSE	=> FALSE,
+									\Tracy\Dumper::LIVE		=> TRUE,
+								])
+						?></div></td>
+						<td class="exec" title="<?php echo number_format($item->exec, 3, '.', '&nbsp;'); ?>&nbsp;s"><?php echo number_format($item->execMili, 3, '.', '&nbsp;'); ?>&nbsp;ms</td>
+						<td class="stack"><div>
+							<span class="info"><?php $stepsCount = count($item->stack); echo $stepsCount; ?>&nbsp;step<?php if ($stepsCount > 0) echo 's'; ?></span>
+							<table class="steps"><tbody><?php
+								foreach ($item->stack as $stackItem):
+									list($fileLink, $phpCode) = $stackItem;
+									?><tr><td class="link"><?php echo $fileLink; ?></td><td class="code"><?php echo $phpCode; ?></td></tr><?php
+								endforeach;
+							?></tbody></table>
+						</div></td>
+						<td class="conn"><?php echo $item->connection; ?></td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
 </div>
+<script>
+	(function(){
+		var tbody = document.querySelector('#tracy-db-panel .content table tbody'),
+			orderAnchors = [].slice.apply(document.querySelectorAll('#tracy-db-panel .content table thead a')),
+			sessionStorageKeyBase = 'tracy-toggles-tracy-debug-panel-db-panel-r',
+			rowsData = null,
+			orderMaps = {
+				order: [],
+				exec: [],
+				conn: []
+			},
+			lastClickedElm = null,
+			timeoutId = 0;
+		var handleTbodyClick = function (e) {
+			var rowElm = getQueryRowFromTarget(e);
+			if (rowElm == null) return;
+			if (e.target === lastClickedElm) {
+				clearTimeout(timeoutId);
+				lastClickedElm = null;
+				handleTbodyDoubleClick(rowElm);
+			} else {
+				lastClickedElm = e.target;
+				timeoutId = setTimeout(function () {
+					clearTimeout(timeoutId);
+					lastClickedElm = null;
+				}, 500);
+			}
+		};
+		var getQueryRowFromTarget = function (e) {
+			var currentElm = e.target,
+				rowElm = null;
+			while (currentElm.parentNode != null) {
+				if (isQueryRow(currentElm)) {
+					rowElm = currentElm;
+					break;
+				}
+				currentElm = currentElm.parentNode;
+			}
+			return rowElm;
+		};
+		var isQueryRow = function (elm) {
+			return elm.nodeName.toLowerCase() == 'tr' && elm.className.indexOf('query-row') != -1;
+		};
+		var handleTbodyDoubleClick = function (rowElm) {
+			var rowElmCls = rowElm.className,
+				rowHash = rowElm.dataset.hash;
+			if (rowElmCls.indexOf('opened') == -1) {
+				rowElm.className = rowElmCls + ' opened';
+				storeRowState(rowHash, 1);
+			} else {
+				rowElm.className = rowElmCls.replace(/^(.*)(\s*opened\s*)(.*)/g, '$1$3');
+				storeRowState(rowHash, 0);
+			}
+		};
+		var storeRowState = function (rowHash, state) {
+			window.sessionStorage[sessionStorageKeyBase + rowHash] = state;
+		}
+		var handleOrderClick = function (e) {
+			if (rowsData == null) completeRowsData();
+			var anchor = e.target,
+				orderMapKey = anchor.dataset.map,
+				dir = parseInt(anchor.dataset.dir, 10),
+				orderMap = orderMaps[orderMapKey];
+			orderAnchors.forEach(function (orderAnchor) {
+				if (orderAnchor === anchor) return;
+				orderAnchor.className = '';
+				orderAnchor.setAttribute('data-dir', '0');
+			});
+			if (dir === 0) {
+				dir = 1;
+				anchor.className = 'asc';
+			} else if (dir === 1) {
+				dir = -1;
+				anchor.className = 'desc';
+			} else {
+				dir = 0;
+				anchor.className = '';
+			}
+			anchor.setAttribute('data-dir', dir);
+			if (dir === 0) {
+				orderMap = orderMaps.order;
+				dir = 1;
+			}
+			var rowsCodes = [],
+				index = 0;
+			if (dir === 1) {
+				for (var i = 0, l = orderMap.length; i < l; i++) {
+					index = orderMap[i].index;
+					rowsCodes.push(rowsData[index].rowElm.outerHTML);
+				}
+			} else {
+				for (var i = orderMap.length - 1; i >= 0; i--) {
+					index = orderMap[i].index;
+					rowsCodes.push(rowsData[index].rowElm.outerHTML);
+				}
+			}
+			tbody.innerHTML = rowsCodes.join('');
+		};
+		var completeRowsData = function () {
+			var tbodyRows = [].slice.apply(tbody.querySelectorAll('tr'));
+			rowsData = [];
+			tbodyRows.forEach(function (tbodyRow, index) {
+				var row = JSON.parse(tbodyRow.dataset.row);
+				row.index = index;
+				row.rowElm = tbodyRow;
+				rowsData.push(row);
+				orderMaps.order.push({ index: index })
+				orderMaps.exec.push({ exec: row.exec, index: index });
+				orderMaps.conn.push({ conn: row.conn, index: index });
+			});
+			orderMaps.exec.sort(function (a, b) {
+				if (a.exec > b.exec) return 1;
+				if (a.exec < b.exec) return -1;
+				return a.index > b.index ? 1 : -1;
+			});
+			orderMaps.conn.sort(function (a, b) {
+				var compared = b.conn.localeCompare(a.conn);
+				if (compared !== 0) return compared;
+				return a.index > b.index ? 1 : -1;
+			});
+		}
+		tbody.addEventListener('click', handleTbodyClick);
+		orderAnchors.forEach(function (orderAnchor) {
+			orderAnchor.addEventListener('click', handleOrderClick);
+		});
+		var sessionStorageKeys = Object.keys(window.sessionStorage),
+			sessionStorageKeyBaseLen = sessionStorageKeyBase.length,
+			sessionStorageKey = '',
+			rowHash = '',
+			savedOpenedRows = [];
+		for (var i = 0, l = sessionStorageKeys.length; i < l; i++) {
+			sessionStorageKey = sessionStorageKeys[i];
+			if (sessionStorageKey.indexOf(sessionStorageKeyBase) !== 0) continue;
+			if (window.sessionStorage[sessionStorageKey] !== '1') continue;
+			rowHash = sessionStorageKey.substr(sessionStorageKeyBaseLen).trim();
+			if (rowHash.length !== 32) continue;
+			var rowToOpen = tbody.querySelector("tr[data-hash='" + rowHash + "']");
+			rowToOpen.className = rowToOpen.className + ' opened';
+		}
+	})();
+</script>
