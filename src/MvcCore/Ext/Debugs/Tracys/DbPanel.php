@@ -27,6 +27,12 @@ class DbPanel implements \Tracy\IBarPanel {
 	const VERSION = '5.0.0';
 
 	/**
+	 * Unique panel id.
+	 * @var string|NULL
+	 */
+	protected $panelId = NULL;
+
+	/**
 	 * Rendered queires for template.
 	 * @var array|NULL
 	 */
@@ -43,6 +49,12 @@ class DbPanel implements \Tracy\IBarPanel {
 	 * @var float
 	 */
 	protected $queriesTime = 0.0;
+	
+	/**
+	 * Debug code for this panel, printed at panel bottom.
+	 * @var string
+	 */
+	private $_debugCode = '';
 
 	/**
 	 * Get unique `Tracy` debug bar panel id.
@@ -82,6 +94,7 @@ class DbPanel implements \Tracy\IBarPanel {
 	protected function prepareQueriesData () {
 		if ($this->queries !== NULL) return;
 		$this->queries = [];
+		$this->panelId = number_format(microtime(TRUE), 6, '', '');
 		$sysConfProps = \MvcCore\Model::GetSysConfigProperties();
 		$dbDebugger = \MvcCore\Ext\Models\Db\Debugger::GetInstance();
 		$store = & $dbDebugger->GetStore();
@@ -203,5 +216,17 @@ class DbPanel implements \Tracy\IBarPanel {
 			serialize($item->params),
 			serialize($preparedStack)
 		]));
+	}
+
+	/**
+	 * Print any variable in panel body under database queries.
+	 * @param  mixed $var
+	 * @return void
+	 */
+	private function _debug ($var) {
+		$this->_debugCode .= \Tracy\Dumper::toHtml($var, [
+			\Tracy\Dumper::LIVE		=> TRUE,
+			//\Tracy\Dumper::DEPTH	=> 5,
+		]);
 	}
 }

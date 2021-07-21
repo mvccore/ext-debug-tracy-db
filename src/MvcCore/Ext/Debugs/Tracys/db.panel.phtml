@@ -45,7 +45,7 @@
 			<span title="<?php echo number_format($this->queriesTime, 3, '.', ' '); ?>&nbsp;s">queires time: <?php echo number_format($this->queriesTime * 1000, 3, '.', ' '); ?>&nbsp;ms</span>
 		</span>
 	</h1>
-	<div class="content">
+	<div class="content" id="tracy-db-panel-content-<?php echo $this->panelId; ?>">
 		<table>
 			<thead>
 				<tr>
@@ -84,10 +84,12 @@
 			</tbody>
 		</table>
 	</div>
+	<?php echo $this->_debugCode; ?>
 </div>
 <script>
-	(function(){
-		var tbody = document.querySelector('#tracy-db-panel .content table tbody'),
+	(function () {
+		var content = document.getElementById('tracy-db-panel-content-<?php echo $this->panelId; ?>'),
+			tbody = content.querySelector('table tbody'),
 			orderAnchors = [].slice.apply(document.querySelectorAll('#tracy-db-panel .content table thead a')),
 			sessionStorageKeyBase = 'tracy-toggles-tracy-debug-panel-db-panel-r',
 			rowsData = null,
