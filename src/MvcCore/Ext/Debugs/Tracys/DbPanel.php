@@ -111,7 +111,7 @@ class DbPanel implements \Tracy\IBarPanel {
 			$preparedStack = $this->prepareStackData($item->stack, $appRoot, $appRootLen);
 			$this->queries[] = (object) [
 				'query'		=> $dumpSuccess ? $queryWithValues : $item->query,
-				'params'	=> $dumpSuccess ? $item->params : NULL,
+				'params'	=> $dumpSuccess ? NULL : $item->params,
 				'exec'		=> $item->exec,
 				'execMili'	=> $item->exec * 1000,
 				'stack'		=> $preparedStack,
