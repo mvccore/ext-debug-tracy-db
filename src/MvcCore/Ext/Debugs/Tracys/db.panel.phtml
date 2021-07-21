@@ -224,7 +224,7 @@
 			rowHash = sessionStorageKey.substr(sessionStorageKeyBaseLen).trim();
 			if (rowHash.length !== 32) continue;
 			var rowToOpen = tbody.querySelector("tr[data-hash='" + rowHash + "']");
-			rowToOpen.className = rowToOpen.className + ' opened';
+			if (rowToOpen) rowToOpen.className = rowToOpen.className + ' opened';
 		}
 	})();
 </script>
