@@ -24,7 +24,37 @@ class DbPanel implements \Tracy\IBarPanel {
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.0.0';
+	const VERSION = '5.0.1';
+	
+	/**
+	 * Query type keywords to match.
+	 * @var array
+	 */
+	protected static $queryTypesKeywords = [
+		1	=> ' select ',
+		2	=> ' insert ',
+		4	=> ' update ',
+		8	=> ' delete ',
+		16	=> ' truncate ',
+		32	=> ' create ',
+		64	=> ' alter ',
+		128	=> ' drop ',
+	];
+
+	/**
+	 * Query type background colors.
+	 * @var array
+	 */
+	protected static $queryTypesColors = [
+		1	=> 'transparent',	// select
+		2	=> '#cbffcb',		// insert
+		4	=> '#ffe7a3',		// update
+		8	=> '#ffcbd3',		// delete
+		16	=> '#ffcbd3',		// truncate
+		32	=> '#e6bfff',		// create
+		64	=> '#f16183',		// alter
+		128	=> '#bcceff',		// drop
+	];
 
 	/**
 	 * Unique panel id.
@@ -108,9 +138,11 @@ class DbPanel implements \Tracy\IBarPanel {
 			) = \MvcCore\Ext\Models\Db\Connection::DumpQueryWithParams(
 				$connection->GetProvider(), $item->query, $item->params
 			);
+			$query = trim($dumpSuccess ? $queryWithValues : $item->query);
 			$preparedStack = $this->prepareStackData($item->stack, $appRoot, $appRootLen);
 			$this->queries[] = (object) [
-				'query'		=> $dumpSuccess ? $queryWithValues : $item->query,
+				'query'		=> $query,
+				'type'		=> $this->prepareQueryType($query),
 				'params'	=> $dumpSuccess ? NULL : $item->params,
 				'exec'		=> $item->exec,
 				'execMili'	=> $item->exec * 1000,
@@ -123,6 +155,20 @@ class DbPanel implements \Tracy\IBarPanel {
 		$this->queriesCount = count($this->queries);
 		$this->queriesTime = $this->queriesTime;
 		$dbDebugger->Dispose();
+	}
+
+	/**
+	 * Prepare query type by matched keywords.
+	 * @param  string $query 
+	 * @return int
+	 */
+	protected function prepareQueryType ($query) {
+		$queryType = 0;
+		$queryWithSingleSpace = ' '.preg_replace("#\s+#", ' ', str_replace(';', ' ; ', $query)).' ';
+		foreach (static::$queryTypesKeywords as $queryTypeFlag => $queryTypeKeyword) 
+			if (stripos($queryWithSingleSpace, $queryTypeKeyword) !== FALSE) 
+				$queryType |= $queryTypeFlag;
+		return $queryType;
 	}
 
 	/**
@@ -150,7 +196,6 @@ class DbPanel implements \Tracy\IBarPanel {
 				$func = $stackItem['function'];
 			if (isset($stackItem['type']))
 				$callType = str_replace('-', '&#8209;', $stackItem['type']);
-			$callType = '::';
 			if ($func !== NULL && $file !== NULL && $line !== NULL) {
 				$visibleFilePath = $this->getVisibleFilePath($file, $appRoot, $appRootLen);
 				$phpCode = $class !== NULL

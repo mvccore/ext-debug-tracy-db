@@ -1,6 +1,7 @@
 <style type="text/css">
 	#tracy-db-panel{overflow:hidden;}
-	.tracy-mode-float #tracy-db-panel{overflow:visible;}
+	.tracy-mode-float #tracy-db-panel,
+	.tracy-mode-window #tracy-db-panel{overflow:visible;}
 	
 	#tracy-db-panel h1{cursor:move;overflow:hidden;}
 	#tracy-debug #tracy-db-panel h1{padding-right:0;}
@@ -9,6 +10,13 @@
 	#tracy-db-panel h1 .right{display:block;float:right;line-height:16px;font-size:10px;padding-top:12px;}
 
 	#tracy-db-panel .content > table{width:auto;}
+
+	<?php
+		foreach (static::$queryTypesColors as $queryTypeFlag => $queryTypeColor):
+			echo '	#tracy-db-panel .content > table tbody tr.query-type-'.$queryTypeFlag.' > td{background-color:'.$queryTypeColor.";}\n";
+		endforeach;
+	?>
+
 	#tracy-db-panel .content > table thead tr th a{text-decoration:underline;}
 	#tracy-db-panel .content > table thead tr th a.asc::after{content:'▼';}
 	#tracy-db-panel .content > table thead tr th a.desc::after{content:'▲';}
@@ -58,7 +66,16 @@
 			</thead>
 			<tbody>
 				<?php foreach ($this->queries as $key => $item): ?>
-					<tr class="query-row" data-hash="<?php echo $item->hash; ?>" data-row='{"exec":<?php echo $item->exec; ?>,"conn":<?php echo json_encode($item->connection); ?>}'>
+					<tr 
+						class="query-row<?php
+							foreach (array_keys(static::$queryTypesColors) as $queryTypeFlag):
+								if (($item->type & $queryTypeFlag) != 0):
+									echo ' query-type-'.$queryTypeFlag;
+								endif;
+							endforeach;
+						?>" 
+						data-hash="<?php echo $item->hash; ?>" 
+						data-row='{"exec":<?php echo $item->exec; ?>,"conn":<?php echo json_encode($item->connection); ?>}'>
 						<td class="order"><?php echo number_format($key+1, 0, '', '&nbsp;'); ?></td>
 						<td class="query"><div><?php
 							echo $item->query;
@@ -171,16 +188,22 @@
 				dir = 1;
 			}
 			var rowsCodes = [],
+				rowHash = '',
+				row = null,
 				index = 0;
 			if (dir === 1) {
 				for (var i = 0, l = orderMap.length; i < l; i++) {
 					index = orderMap[i].index;
-					rowsCodes.push(rowsData[index].rowElm.outerHTML);
+					rowHash = rowsData[index].rowElm.dataset.hash;
+					row = tbody.querySelector("tr[data-hash='" + rowHash + "']");
+					rowsCodes.push(row.outerHTML);
 				}
 			} else {
 				for (var i = orderMap.length - 1; i >= 0; i--) {
 					index = orderMap[i].index;
-					rowsCodes.push(rowsData[index].rowElm.outerHTML);
+					rowHash = rowsData[index].rowElm.dataset.hash;
+					row = tbody.querySelector("tr[data-hash='" + rowHash + "']");
+					rowsCodes.push(row.outerHTML);
 				}
 			}
 			tbody.innerHTML = rowsCodes.join('');
