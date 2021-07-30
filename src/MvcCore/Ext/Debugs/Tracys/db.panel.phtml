@@ -1,11 +1,14 @@
-<style type="text/css">
+<?php
+	$nonce = \Tracy\Helpers::getNonce();
+	$nonceAttr = $nonce ? ' nonce="' . \Tracy\Helpers::escapeHtml($nonce) . '"' : '';
+?><style type="text/css"<?php echo $nonceAttr; ?>>
 	#tracy-db-panel{overflow:hidden;}
 	.tracy-mode-float #tracy-db-panel,
 	.tracy-mode-window #tracy-db-panel{overflow:visible;}
 	
 	#tracy-db-panel h1{cursor:move;overflow:hidden;}
 	#tracy-debug #tracy-db-panel h1{padding-right:0;}
-	#tracy-db-panel h1 *{white-space:nowrap;}
+	#tracy-db-panel h1 *{white-space:nowrap !important;}
 	#tracy-db-panel h1 .left{display:block;float:left;line-height:30px;font-size:24px;}
 	#tracy-db-panel h1 .right{display:block;float:right;line-height:16px;font-size:10px;padding-top:12px;}
 
@@ -30,6 +33,9 @@
 	#tracy-db-panel .content > table tbody tr td.order,
 	#tracy-db-panel .content > table tbody tr td.exec{text-align:right;}
 
+	#tracy-db-panel .content > table tbody tr td.exec div{display:none;}
+	#tracy-db-panel .content > table tbody tr.opened td.exec div{display:block;}
+
 	#tracy-db-panel .content > table tbody tr td.stack div{overflow:hidden;max-height:16px;line-height:20px;font-size:12px;text-align:right;}
 	#tracy-db-panel .content > table tbody tr.opened td.stack div{overflow:visible;max-height:none;text-align:left;}
 	#tracy-db-panel .content > table tbody tr td.stack div span.info{display:inline-block;}
@@ -41,7 +47,10 @@
 	#tracy-db-panel .content > table tbody tr td.stack div table tbody tr td{border:0;padding:0;white-space:nowrap;}
 	#tracy-db-panel .content > table tbody tr td.stack div table tbody tr td.code{padding-left:15px;}
 	#tracy-db-panel .content > table tbody tr td.stack div table tbody tr td span,
-	#tracy-db-panel .content > table tbody tr td.stack div table tbody tr td span a{white-space:nowrap;word-wrap:normal;}
+	#tracy-db-panel .content > table tbody tr td.stack div table tbody tr td a{color:#125eae;white-space:nowrap;word-wrap:normal;}
+	#tracy-db-panel .content > table tbody tr td.stack div table tbody tr td a:hover,
+	#tracy-db-panel .content > table tbody tr td.stack div table tbody tr td a:focus,
+	#tracy-db-panel .content > table tbody tr td.stack div table tbody tr td a:active{color:#fff;}
 
 	#tracy-db-panel .content > table tbody tr td.conn{text-align:center;}
 </style>
@@ -85,7 +94,12 @@
 									\Tracy\Dumper::LIVE		=> TRUE,
 								])
 						?></div></td>
-						<td class="exec" title="<?php echo number_format($item->exec, 3, '.', '&nbsp;'); ?>&nbsp;s"><?php echo number_format($item->execMili, 3, '.', '&nbsp;'); ?>&nbsp;ms</td>
+						<td class="exec" title="<?php echo number_format($item->exec, 3, '.', '&nbsp;'); ?>&nbsp;s"><?php
+							echo number_format($item->execMili, 3, '.', '&nbsp;');
+						?>&nbsp;ms<div>
+							Request:&nbsp;<?php echo $item->reqTime; ?><br />
+							Response:&nbsp;<?php echo $item->resTime; ?>
+						</div></td>
 						<td class="stack"><div>
 							<span class="info"><?php $stepsCount = count($item->stack); echo $stepsCount; ?>&nbsp;step<?php if ($stepsCount > 0) echo 's'; ?></span>
 							<table class="steps"><tbody><?php
@@ -101,9 +115,9 @@
 			</tbody>
 		</table>
 	</div>
-	<?php echo $this->_debugCode; ?>
+	<?php echo $this->debugCode; ?>
 </div>
-<script>
+<script type="text/javascript"<?php echo $nonceAttr; ?>>
 	(function () {
 		var content = document.getElementById('tracy-db-panel-content-<?php echo $this->panelId; ?>'),
 			tbody = content.querySelector('table tbody'),
