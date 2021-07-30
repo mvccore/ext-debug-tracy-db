@@ -15,7 +15,8 @@ namespace MvcCore\Ext\Debugs\Tracys;
 
 /**
  * Responsibility - dump all executed SQL queries on configured connection(s) 
- *                  with params, exec time, stack trace and connection name.
+ *                  with params, exec time, stack trace and connection name
+ *                  for HTTP request into Tracy's debug panel.
  */
 class DbPanel implements \Tracy\IBarPanel {
 
@@ -24,7 +25,7 @@ class DbPanel implements \Tracy\IBarPanel {
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.0.1';
+	const VERSION = '5.0.2';
 	
 	/**
 	 * Query type keywords to match.
@@ -84,7 +85,7 @@ class DbPanel implements \Tracy\IBarPanel {
 	 * Debug code for this panel, printed at panel bottom.
 	 * @var string
 	 */
-	private $_debugCode = '';
+	protected $debugCode = '';
 
 	/**
 	 * Get unique `Tracy` debug bar panel id.
@@ -111,7 +112,7 @@ class DbPanel implements \Tracy\IBarPanel {
 	 */
 	public function getPanel() {
 		$this->prepareQueriesData();
-		if ($this->queriesCount === 0) return '';
+		if ($this->queriesCount === 0) return $this->debugCode;
 		ob_start();
 		include(__DIR__ . '/db.panel.phtml');
 		return ob_get_clean();
@@ -125,11 +126,12 @@ class DbPanel implements \Tracy\IBarPanel {
 		if ($this->queries !== NULL) return;
 		$this->queries = [];
 		$this->panelId = number_format(microtime(TRUE), 6, '', '');
+		$dbDebugger = $this->prepareGetAttachedDebugger();
 		$sysConfProps = \MvcCore\Model::GetSysConfigProperties();
-		$dbDebugger = \MvcCore\Ext\Models\Db\Debugger::GetInstance();
 		$store = & $dbDebugger->GetStore();
 		$appRoot = \MvcCore\Application::GetInstance()->GetRequest()->GetAppRoot();
 		$appRootLen = mb_strlen($appRoot);
+		$datetimeFormat = 'H:i:s.';
 		foreach ($store as $item) {
 			$connection = $item->connection;
 			$connConfig = $connection->GetConfig();
@@ -140,21 +142,61 @@ class DbPanel implements \Tracy\IBarPanel {
 			);
 			$query = trim($dumpSuccess ? $queryWithValues : $item->query);
 			$preparedStack = $this->prepareStackData($item->stack, $appRoot, $appRootLen);
+			$execMsTimestamp = $item->resTime - $item->reqTime;
+			$reqTimestampInt = intval(floor($item->reqTime));
+			$resTimestampInt = intval(floor($item->resTime));
+			$reqDateTimeStr = date($datetimeFormat, $reqTimestampInt);
+			$resDateTimeStr = date($datetimeFormat, $resTimestampInt);
+			$reqDatetimeMs = intval(round(($item->reqTime - floatval($reqTimestampInt)) * 1000000));
+			$resDatetimeMs = intval(round(($item->resTime - floatval($resTimestampInt)) * 1000000));
 			$this->queries[] = (object) [
 				'query'		=> $query,
 				'type'		=> $this->prepareQueryType($query),
 				'params'	=> $dumpSuccess ? NULL : $item->params,
-				'exec'		=> $item->exec,
-				'execMili'	=> $item->exec * 1000,
+				'reqTime'	=> $reqDateTimeStr . $reqDatetimeMs,
+				'resTime'	=> $resDateTimeStr . $resDatetimeMs,
+				'exec'		=> $execMsTimestamp,
+				'execMili'	=> $execMsTimestamp * 1000,
 				'stack'		=> $preparedStack,
 				'connection'=> $connConfig->{$sysConfProps->name},
 				'hash'		=> $this->hashQuery($item, $preparedStack),
 			];
-			$this->queriesTime += $item->exec;
+			$this->queriesTime += $execMsTimestamp;
 		}
 		$this->queriesCount = count($this->queries);
 		$this->queriesTime = $this->queriesTime;
 		$dbDebugger->Dispose();
+	}
+
+	/**
+	 * Return attached debugger singleton on any existing and opened connection.
+	 * @return \MvcCore\Ext\Models\Db\Debugger|NULL
+	 */
+	protected function prepareGetAttachedDebugger () {
+		$dbConfigs = \MvcCore\Model::GetConfigs();
+		$extendedConnectionFound = FALSE;
+		$dbDebugger = NULL;
+		foreach ($dbConfigs as $connectionName => $dbConfig) {
+			if (\MvcCore\Model::HasConnection($connectionName)) {
+				$conn = \MvcCore\Model::GetConnection($connectionName);
+				if ($conn instanceof \MvcCore\Ext\Models\Db\IConnection) {
+					$extendedConnectionFound = TRUE;
+					$debuggerLocal = $conn->GetDebugger();
+					if ($debuggerLocal !== NULL) {
+						$dbDebugger = $debuggerLocal;
+						if (count($debuggerLocal->GetStore()) > 0)
+							break;
+					}
+				}
+			}
+		}
+		if ($dbDebugger === NULL) {
+			$this->debugCode = !$extendedConnectionFound
+				? "No database connection found, which implements interface `\MvcCore\Ext\Models\Db\IConnection`."
+				: "No configured debugger found on any database connection.";
+			return NULL;
+		}
+		return $dbDebugger;
 	}
 
 	/**
@@ -268,9 +310,9 @@ class DbPanel implements \Tracy\IBarPanel {
 	 * @param  mixed $var
 	 * @return void
 	 */
-	private function _debug ($var) {
-		$this->_debugCode .= \Tracy\Dumper::toHtml($var, [
-			\Tracy\Dumper::LIVE		=> TRUE,
+	protected function debug ($var) {
+		$this->debugCode .= \Tracy\Dumper::toHtml($var, [
+			\Tracy\Dumper::LIVE		=> FALSE,
 			//\Tracy\Dumper::DEPTH	=> 5,
 		]);
 	}
