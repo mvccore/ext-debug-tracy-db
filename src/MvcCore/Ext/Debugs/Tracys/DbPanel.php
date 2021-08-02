@@ -127,6 +127,7 @@ class DbPanel implements \Tracy\IBarPanel {
 		$this->queries = [];
 		$this->panelId = number_format(microtime(TRUE), 6, '', '');
 		$dbDebugger = $this->prepareGetAttachedDebugger();
+		if ($dbDebugger === NULL) return;
 		$sysConfProps = \MvcCore\Model::GetSysConfigProperties();
 		$store = & $dbDebugger->GetStore();
 		$appRoot = \MvcCore\Application::GetInstance()->GetRequest()->GetAppRoot();
