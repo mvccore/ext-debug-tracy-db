@@ -141,7 +141,7 @@ class DbPanel implements \Tracy\IBarPanel {
 			) = \MvcCore\Ext\Models\Db\Connection::DumpQueryWithParams(
 				$connection->GetProvider(), $item->query, $item->params
 			);
-			$query = trim($dumpSuccess ? $queryWithValues : $item->query);
+			$query = $dumpSuccess ? $queryWithValues : $item->query;
 			$preparedStack = $this->prepareStackData($item->stack, $appRoot, $appRootLen);
 			$execMsTimestamp = $item->resTime - $item->reqTime;
 			$reqTimestampInt = intval(floor($item->reqTime));
@@ -151,7 +151,7 @@ class DbPanel implements \Tracy\IBarPanel {
 			$reqDatetimeMs = intval(round(($item->reqTime - floatval($reqTimestampInt)) * 1000000));
 			$resDatetimeMs = intval(round(($item->resTime - floatval($resTimestampInt)) * 1000000));
 			$this->queries[] = (object) [
-				'query'		=> $query,
+				'query'		=> $this->prepareFormatedQuery($query),
 				'type'		=> $this->prepareQueryType($query),
 				'params'	=> $dumpSuccess ? NULL : $item->params,
 				'reqTime'	=> $reqDateTimeStr . $reqDatetimeMs,
@@ -167,6 +167,41 @@ class DbPanel implements \Tracy\IBarPanel {
 		$this->queriesCount = count($this->queries);
 		$this->queriesTime = $this->queriesTime;
 		$dbDebugger->Dispose();
+	}
+
+	/**
+	 * Trim query and cut minimum whitespaces in each line.
+	 * @param  string $rawQuery 
+	 * @return string
+	 */
+	protected function prepareFormatedQuery ($rawQuery) {
+		$queryLines = explode("\n", str_replace(["\r", "\n\n"], ["\n", "\n"], $rawQuery));
+		$indents = [];
+		$minIndent = PHP_INT_MAX;
+		foreach ($queryLines as $index => $queryLine) {
+			$queryLineTrimmed = trim($queryLine);
+			if (mb_strlen($queryLineTrimmed) === 0) {
+				unset($queryLines[$index]);
+				continue;
+			}
+			$indent = preg_replace("#^([\t ]*).*#u", "$1", $queryLine);
+			$tabIndent = str_replace("    ", "\t", $indent);
+			$tabIndentLen = mb_strlen($tabIndent);
+			$indents[$index] = [$tabIndentLen, mb_strlen($indent)];
+			if ($tabIndentLen < $minIndent) $minIndent = $tabIndentLen;
+		}
+		if ($minIndent > 0) {
+			foreach ($queryLines as $index => $queryLine) {
+				list($tabIndent, $realIndent) = $indents[$index];
+				if ($tabIndent === $realIndent) {
+					$queryLines[$index] = mb_substr($queryLine, $minIndent);
+				} else {
+					$indentValue = str_replace("    ", "\t", mb_substr($queryLine, 0, $realIndent));
+					$queryLines[$index] = mb_substr($indentValue, $minIndent) . mb_substr($queryLine, $realIndent);
+				}
+			}
+		}
+		return implode("\n", array_values($queryLines));
 	}
 
 	/**
