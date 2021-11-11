@@ -87,7 +87,7 @@
 						data-row='{"exec":<?php echo $item->exec; ?>,"conn":<?php echo json_encode($item->connection); ?>}'>
 						<td class="order"><?php echo number_format($key+1, 0, '', '&nbsp;'); ?></td>
 						<td class="query"><div><?php
-							echo $item->query;
+							echo htmlspecialchars($item->query, ENT_QUOTES);
 							if ($item->params !== NULL)
 								echo '<br /><br />' . \Tracy\Dumper::toHtml($item->params, [
 									\Tracy\Dumper::COLLAPSE	=> FALSE,
