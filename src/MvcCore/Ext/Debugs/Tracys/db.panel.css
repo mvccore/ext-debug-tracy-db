@@ -1,0 +1,54 @@
+#tracy-debug .tracy-panel-db{overflow:hidden;}
+#tracy-debug .tracy-mode-float .tracy-panel-db,
+#tracy-debug .tracy-mode-window .tracy-panel-db{overflow:visible;}
+	
+#tracy-debug .tracy-panel-db h1{cursor:move;overflow:hidden;}
+#tracy-debug .tracy-panel-db h1{padding-right:0;}
+#tracy-debug .tracy-panel-db h1 *{white-space:nowrap !important;}
+#tracy-debug .tracy-panel-db h1 .left{display:block;float:left;line-height:30px;font-size:24px;}
+#tracy-debug .tracy-panel-db h1 .right{display:block;float:right;line-height:16px;font-size:10px;padding-top:12px;}
+
+.tracy-panel-db .content > table{width:auto;}
+
+<?php
+	foreach (static::$queryTypesColors as $queryTypeFlag => $queryTypeColor):
+		echo '#tracy-debug .tracy-panel-db .content > table tbody tr.query-type-'.$queryTypeFlag.' td{background-color:'.$queryTypeColor.";}\n";
+	endforeach;
+?>
+
+#tracy-debug .tracy-panel-db .content > table thead tr th a{text-decoration:underline;}
+#tracy-debug .tracy-panel-db .content > table thead tr th a.asc:after{content:'▼';}
+#tracy-debug .tracy-panel-db .content > table thead tr th a.desc:after{content:'▲';}
+#tracy-debug .tracy-panel-db .content > table thead tr th a:hover,
+#tracy-debug .tracy-panel-db .content > table thead tr th a:focus,
+#tracy-debug .tracy-panel-db .content > table thead tr th a:active{text-decoration:none;}
+
+#tracy-debug .tracy-panel-db .content > table tbody tr td.query{overflow:hidden;}
+#tracy-debug .tracy-panel-db .content > table tbody tr td.query div{position:relative;overflow:hidden;max-width:250px;max-height:16px;line-height:20px;font-size:12px;font-family:Consolas,monospace;}
+#tracy-debug .tracy-panel-db .content > table tbody tr td.query div textarea{display:none;}
+#tracy-debug .tracy-panel-db .content > table tbody tr.opened td.query div{overflow:visible;max-width:none;max-height:none;white-space:pre;tab-size:4;}
+#tracy-debug .tracy-panel-db .content > table tbody tr.opened td.query div code{visibility:hidden;line-height:1.5em;}
+#tracy-debug .tracy-panel-db .content > table tbody tr.opened td.query div textarea{position:absolute;display:table;line-height:1.5em;width:100%;height:100%;outline:none;border:0;padding:0;}
+#tracy-debug .tracy-panel-db .content > table tbody tr td.order,
+#tracy-debug .tracy-panel-db .content > table tbody tr td.exec{text-align:right;}
+
+#tracy-debug .tracy-panel-db .content > table tbody tr td.exec div{display:none;}
+#tracy-debug .tracy-panel-db .content > table tbody tr.opened td.exec div{display:block;}
+
+#tracy-debug .tracy-panel-db .content > table tbody tr td.stack div{overflow:hidden;max-height:16px;line-height:20px;font-size:12px;text-align:right;}
+#tracy-debug .tracy-panel-db .content > table tbody tr.opened td.stack div{overflow:visible;max-height:none;text-align:left;}
+#tracy-debug .tracy-panel-db .content > table tbody tr td.stack div span.info{display:inline-block;}
+#tracy-debug .tracy-panel-db .content > table tbody tr td.stack div table.steps{display:none;}
+#tracy-debug .tracy-panel-db .content > table tbody tr.opened td.stack div span.info{display:none;}
+#tracy-debug .tracy-panel-db .content > table tbody tr.opened td.stack div table.steps{display:table;}
+
+#tracy-debug .tracy-panel-db .content > table tbody tr td.stack div table{border:0;border-collapse:collapse;}
+#tracy-debug .tracy-panel-db .content > table tbody tr td.stack div table tbody tr td{border:0;padding:0;white-space:nowrap;}
+#tracy-debug .tracy-panel-db .content > table tbody tr td.stack div table tbody tr td.code{padding-left:15px;}
+#tracy-debug .tracy-panel-db .content > table tbody tr td.stack div table tbody tr td span,
+#tracy-debug .tracy-panel-db .content > table tbody tr td.stack div table tbody tr td a{color:#125eae;white-space:nowrap;word-wrap:normal;}
+#tracy-debug .tracy-panel-db .content > table tbody tr td.stack div table tbody tr td a:hover,
+#tracy-debug .tracy-panel-db .content > table tbody tr td.stack div table tbody tr td a:focus,
+#tracy-debug .tracy-panel-db .content > table tbody tr td.stack div table tbody tr td a:active{color:#fff;}
+
+.tracy-panel-db .content > table tbody tr td.conn{text-align:center;}

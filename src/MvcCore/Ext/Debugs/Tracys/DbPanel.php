@@ -25,7 +25,7 @@ class DbPanel implements \Tracy\IBarPanel {
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.0.7';
+	const VERSION = '5.0.8';
 	
 	/**
 	 * Query type keywords to match.
@@ -86,12 +86,19 @@ class DbPanel implements \Tracy\IBarPanel {
 	 * @var string
 	 */
 	protected $debugCode = '';
+	
+	/**
+	 * Assets CSP nonce attribute for web debugging.
+	 * @var string
+	 */
+	protected $nonceAttr = '';
 
+	
 	/**
 	 * Get unique `Tracy` debug bar panel id.
 	 * @return string
 	 */
-	public function getId() {
+	public function getId () {
 		return 'db-panel';
 	}
 
@@ -99,7 +106,7 @@ class DbPanel implements \Tracy\IBarPanel {
 	 * Return rendered debug panel heading HTML code displayed all time in `Tracy` debug  bar.
 	 * @return string
 	 */
-	public function getTab() {
+	public function getTab () {
 		$this->prepareQueriesData();
 		ob_start();
 		include(__DIR__ . '/db.tab.phtml');
@@ -110,9 +117,11 @@ class DbPanel implements \Tracy\IBarPanel {
 	 * Return rendered debug panel content window HTML code.
 	 * @return string
 	 */
-	public function getPanel() {
+	public function getPanel () {
 		$this->prepareQueriesData();
 		if ($this->queriesCount === 0) return $this->debugCode;
+		$nonce = \Tracy\Helpers::getNonce();
+		$this->nonceAttr = $nonce ? ' nonce="' . \Tracy\Helpers::escapeHtml($nonce) . '"' : '';
 		ob_start();
 		include(__DIR__ . '/db.panel.phtml');
 		return ob_get_clean();
