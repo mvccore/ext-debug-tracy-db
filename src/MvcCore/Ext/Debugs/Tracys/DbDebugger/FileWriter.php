@@ -30,7 +30,7 @@ implements	\MvcCore\Ext\Models\Db\IDebugger {
 	const LOG_FILES_BASE_NAME = 'db.queries.';
 
 	/**
-	 * @inheritDocs
+	 * @inheritDoc
 	 * @return \MvcCore\Ext\Debugs\Tracys\DbDebugger\FileWriter
 	 */
 	public static function GetInstance () {
