@@ -58,8 +58,8 @@ implements	\MvcCore\Ext\Models\Db\IDebugger {
 		$this->debug($req);
 		
 		$debugClass = $app->GetDebugClass();
-		$appRoot = $req->GetAppRoot();
-		$logsDirAbsPath = str_replace('~', $appRoot, $debugClass::$LogDirectory);
+		$appRoot = $app->GetPathAppRoot();
+		$logsDirAbsPath = $app->GetPathLogs(TRUE);
 		$tracySrcPath = $this->prepareTracySrcPath($logsDirAbsPath, $appRoot);
 
 		list($htmlBegin, $htmlEnd) = $this->prepareHtmlCode($tracySrcPath);

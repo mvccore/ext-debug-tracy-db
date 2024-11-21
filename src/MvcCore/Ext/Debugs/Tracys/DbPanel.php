@@ -139,7 +139,7 @@ class DbPanel implements \Tracy\IBarPanel {
 		if ($dbDebugger === NULL) return;
 		$sysConfProps = \MvcCore\Model::GetSysConfigProperties();
 		$store = & $dbDebugger->GetStore();
-		$appRoot = \MvcCore\Application::GetInstance()->GetRequest()->GetAppRoot();
+		$appRoot = \MvcCore\Application::GetInstance()->GetPathAppRoot();
 		$appRootLen = mb_strlen($appRoot);
 		$datetimeFormat = 'H:i:s.';
 		foreach ($store as $item) {
