@@ -120,7 +120,10 @@ class DbPanel implements \Tracy\IBarPanel {
 	public function getPanel () {
 		$this->prepareQueriesData();
 		if ($this->queriesCount === 0) return $this->debugCode;
-		$nonce = version_compare(\Tracy\Debugger::Version, '2.10.8', '>=')
+		$tracyVersion = defined("\\Tracy\\Debugger::Version")
+			? \Tracy\Debugger::Version
+			: \Tracy\Debugger::VERSION;
+		$nonce = version_compare($tracyVersion, '2.10.8', '>=')
 			? \Tracy\Helpers::getNonceAttr()
 			: \Tracy\Helpers::getNonce();
 		$this->nonceAttr = $nonce ? ' nonce="' . \Tracy\Helpers::escapeHtml($nonce) . '"' : '';
