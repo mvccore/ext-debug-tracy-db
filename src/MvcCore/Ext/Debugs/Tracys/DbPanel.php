@@ -293,7 +293,7 @@ class DbPanel implements \Tracy\IBarPanel {
 				$phpCode = $class !== NULL
 					? $class . $callType . $func . '();'
 					: $func . '();';
-				$link = \Tracy\Helpers::editorUri($file, $line);
+				$link = \Tracy\Helpers::editorUri($file, $line, 'open', '', '');
 				$result[] = [
 					'<a title="'.$file.':'.$line.'" href="'.$link.'">'.$visibleFilePath.':'.$line.'</a>',
 					$phpCode

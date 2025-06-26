@@ -1,2 +1,2 @@
 ### Fixed
-- Compatible code for deprecated `\Tracy\Debugger::VERSION`.
+- Compatible FIXES for older `tracy/tracy` on newer PHP versions.
