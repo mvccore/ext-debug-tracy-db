@@ -1,2 +1,2 @@
-### Fixed
-- Compatible FIXES for older `tracy/tracy` on newer PHP versions.
+### Updated
+- Updated tracy assets paths, fixed global variable in file writer debugger.
