@@ -49,8 +49,9 @@ implements	\MvcCore\Ext\Models\Db\IDebugger {
 
 	/**
 	 * Complete debugger queries and write it into logs directory.
-	 * @param \MvcCore\IApplication $app 
-	 * @param \MvcCore\IRequest $req 
+	 * @param \MvcCore\IApplication $app
+	 * @param \MvcCore\IRequest     $req
+	 * @return void
 	 */
 	public function ShutdownHandler (\MvcCore\IApplication $app, \MvcCore\IRequest $req) {
 		$this->prepareQueriesData();
@@ -80,19 +81,19 @@ implements	\MvcCore\Ext\Models\Db\IDebugger {
 	/**
 	 * Prepare result file html head and foot.
 	 * @param  string $tracySrcPath 
-	 * @return \string[]
+	 * @return array{"0":string,"1":string}
 	 */
 	protected function prepareHtmlCode ($tracySrcPath) {
 		$assetsCode = [];
 		$cssFiles = [
-			'/assets/BlueScreen/bluescreen.css',
-			'/assets/Bar/bar.css',
-			'/assets/Toggle/toggle.css',
-			'/assets/Dumper/dumper.css',
+			'/BlueScreen/assets/bluescreen.css',
+			'/Bar/assets/bar.css',
+			'/assets/toggle.css',
+			'/Dumper/assets/dumper-light.css',
 		];
 		$jsFiles = [
-			'/assets/Toggle/toggle.js',
-			'/assets/Dumper/dumper.js',
+			'/assets/toggle.js',
+			'/Dumper/assets/dumper.js',
 		];
 
 		foreach ($cssFiles as $cssFile)
@@ -101,7 +102,6 @@ implements	\MvcCore\Ext\Models\Db\IDebugger {
 		
 		foreach ($jsFiles as $jsFile)
 			$assetsCode[] = '<script type="text/javascript" src="' . $tracySrcPath . $jsFile . '"></script>';
-		$assetsCode[] = '<script type="text/javascript">Tracy && Tracy.Dumper.init();</script>';
 		
 		$htmlBegin = '<html id="tracy-bs"><head>'
 			.implode("\n", $assetsCode)
@@ -119,10 +119,8 @@ implements	\MvcCore\Ext\Models\Db\IDebugger {
 	 * @return string
 	 */
 	protected function prepareTracySrcPath ($logsDirAbsPath, $appRoot) {
-		$tracyCollapsePaths = \Tracy\Debugger::getBlueScreen()->collapsePaths;
-		$tracySrcAbsPath = isset($tracyCollapsePaths[0]) 
-			? str_replace('\\', '/', $tracyCollapsePaths[0]) 
-			: $appRoot . '/vendor/tracy/tracy/src/Tracy';
+		$debuggerType = new \ReflectionClass('\\Tracy\\Debugger');
+		$tracySrcAbsPath = str_replace('\\', '/', dirname($debuggerType->getFileName(), 2));
 		$logsDirAbsPathLen = mb_strlen($logsDirAbsPath);
 		$offset = $logsDirAbsPathLen;
 		$parentDirsCount = 0;

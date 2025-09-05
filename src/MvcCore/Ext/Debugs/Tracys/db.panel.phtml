@@ -65,6 +65,6 @@
 	<?php echo $this->debugCode; ?>
 </div>
 <script type="text/javascript"<?php echo $this->nonceAttr; ?>>
-	<?php include_once(__DIR__ . '/db.panel.js'); ?>
-	new Tracy.DebugDbPanel('tracy-db-panel-content-<?php echo $this->panelId; ?>');
+<?php include_once(__DIR__ . '/db.panel.js'); ?>
+new window.Tracy.DebugDbPanel('tracy-db-panel-content-<?php echo $this->panelId; ?>');
 </script>

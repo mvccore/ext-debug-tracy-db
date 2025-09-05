@@ -1,5 +1,5 @@
-var Tracy = window.Tracy || {};
-Tracy.DebugDbPanel = (function () {
+window.Tracy = window.Tracy || {};
+window.Tracy.DebugDbPanel = (function () {
 	var DebugDbPanel = function (contentPanelId) {
 		var content = document.getElementById(contentPanelId);
 		this.tbody = content.querySelector('table tbody');
